@@ -1,0 +1,56 @@
+<h1>Gorilla Open Functions: Convert natural language into API calls</h1>
+<p><img alt="Image" src="./gorilla_open_function_calling.png" /></p>
+<h2>Introduction</h2>
+<p>Open Functions is designed to extend Large Language Model(LLM) Chat Completion feature to formulate executable APIs call given natural language instructions and API context. Imagine if LLM could fill in parameters for a variety of service ranging from Instagram and Doordash to tools like Google Calendar and Stripe. Even users who are less familiar with API calling procedure and programming could use the model to generate APIs call to desired function. Open Function is an LLM that we train using a curated set of API documentations and Question Answer pairs generated from the API documentations. We have continued to expand on the Gorilla Paradigm and sought to improve the quality and accuracy of valid function calling generation.</p>
+<p><img alt="Image" src="./main_image.png" /></p>
+<h2>Function Calling API vs. REST API</h2>
+<p>During the data collection process, we have observed that general API calling can be divided into 2 categories: </p>
+<ul>
+<li>Function Calling APIs </li>
+<li>REST APIs.</li>
+</ul>
+<p>First, the Function Calling APIs are typically seen in external python packages like Numpy, Sklearn. Those APIs are well-defined and easily formatted. In anther word, knowing the 'api_name' e.g. <code>numpy.sum()</code> and the 'arguments' specification, we are able to extrapolate an executable function API. Due to its stable format and fixed locality, it takes relatively few data to fine-tune the model. </p>
+<p>On the other hand, the REST APIs also accounts for a significant portion of the APIs in the market. Those APIs are typically provided by third-party hosting and offer a variety of functionality ranging from financial service to weather forecasting. Often time, REST APIs contain three parameter metadata: <code>url</code>, <code>header</code>, and <code>params</code>. Url contains the API endpoints, header usually contains authentication information, and paramters contain information query to the API endpoint. Using <code>requests.get</code> we are able to properly query to the endpoint. However, REST APIs' parameters can exist in different locations. For example, the parameters can be embedded within the URL e.g. <code>gorilla.berkeley.edu/{param1}/{param2}</code>. Another way to represent parameters embedding can be <code>gorilla.berkeley.edu/?query=param1</code>. Different ways of calling REST API make it difficult for our model to handle complex REST API call. As a result, we have explored different sources of REST APIs such as RapidAPI, Postman API to diversify our API Database and generate more accuracte REST API.</p>
+<h2>Retrieval Aware Training</h2>
+<p><img alt="Image" src="./rat2.png" /></p>
+<p>One of the key training strategies we employed for Gorilla Open Functions is Retrieval Aware Training (RAT). In this approach, during the training phase, we provide the model with both user queries and retrieved API JSON descriptions. This method enables the model to comprehend the information contained in the API description and accurately generate a corresponding Python function call based on the user's query.</p>
+<p>The beauty of RAT lies in its ability to simulate real-world scenarios where a developer might look up an API documentation before formulating a function call. By exposing our model to this process during training, we enhance its ability to understand and use the provided APIs correctly. This not only results in more accurate function calls but also improves the model's adaptability when faced with APIs it hasn't seen before.</p>
+<p>Moreover, by integrating retrieval into our training pipeline, we ensure that Gorilla Open Functions can handle rapidly evolving APIs and stay updated with their latest versions. This makes it a reliable tool for developers navigating through ever-changing landscapes of APIs. With Retrieval Aware Training at its core, Gorilla Open Functions represents a significant leap towards making AI models more context-aware and responsive to users' needs.</p>
+<h2>How to use Open Functions</h2>
+<p>Using Gorilla Open Functions is straightforward:
+1. Define Your Functions: Provide a JSON file containing descriptions of your custom functions. Each function should contains field: <code>name</code>, the name of the API, <code>api_call</code>, the way we should invoke this API, <code>description</code>, the functionality of the API, and lastly <code>parameters</code>, which is a list of parameters pretains to the API call. Below is an example of sufficent API documentation that can feed into Open Function.
+<code>json
+ function_documentaion = {  
+  "name" : "Order Food on Uber",
+  "api_call": "uber.eat.order",
+  "description": "Order food on uber eat given a list of items and the quantity of items respectively",
+  "parameters": 
+    [
+     {
+      "name": "restaurants", 
+      "description": "The restaurants user wants to order from" 
+     }, 
+     {
+       "name": "items", 
+       "description": "A list of order user wants to order from restaurants"
+     },
+      {"name": "quantities", 
+       "description": "A list of quantities corresponding to the items ordered"
+     }
+    ]
+ }</code>
+2. Ask Your Question: Describe what you want as if talking to another person.
+<code>json
+I want to order five burgers and six chicken wings from McDonlad.</code>
+3. Get Your Function Call: The model will return a Python function call based on your request.
+This opens up possibilities for developers and non-developers alike, allowing them to leverage complex functionalities without writing extensive code.</p>
+<p>Input:
+<code>json
+get_gorilla_response(prompt="I want to order five burgers and six chicken wings from McDonlad.", functions=[function_documentaion])</code>
+Output:
+<code>json
+uber.eat.order(restaurants="McDonald",item=["chicken wings", "burgers"], quantity=[6,5])</code></p>
+<h2>Metrics and Measurement</h2>
+<p>TBD</p>
+<hr />
+<p>We hope you enjoyed this blog post. We would love to hear from you on Discord, Twitter (#GorillaLLM), and GitHub.</p>
